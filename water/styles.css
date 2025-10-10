@@ -1,0 +1,25 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    margin-top: 100px;
+    background-color: beige;
+}
+h1 {
+    color:black;
+}
+p {
+    font-size: 18px;
+}
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background-color:burlywood;
+    color: #2e2c2c;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0277bd;
+}

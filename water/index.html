@@ -2,12 +2,21 @@
 <html>
     <head>
         <title>water reminder app</title>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="styles.css">
     </head>
 
     <body>
         <h1>water reminder gimmick</h1>
         <p>here's a little gimmick that i created to set little reminders for you to drink water!</p>
+        <label for="interval">choose reminder interval:</label>
+        <select id="interval">
+            <option value="1800000">every 30 mins</option>
+            <option value="3600000">every 1 hr</option>
+            <option value="7200000">every 2 hrs</option>
+        </select>
         <button id="start_button">start reminders</button>
         <button id="stop_button">stop reminders</button>
+        <script src="script.js"></script>
     </body>
 </html>
