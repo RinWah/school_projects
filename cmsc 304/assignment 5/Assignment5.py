@@ -22,7 +22,7 @@ class Rectangle:
         self.width = w
         self.x = x
         self.y = y
-def pack_rects(rects, canvas_size):
+def pack(rects, canvas_size):
     packer = newPacker()
     for r in rects:
         packer.add_rect(r.width, r.height)
@@ -45,7 +45,7 @@ def main():
     for line in lines[1:]:
         h, w = map(int, line.split(","))
         rects.append(Rectangle(h, w))
-    packed = pack_rects(rects, (canvas_h, canvas_w))
+    packed = pack(rects, (canvas_h, canvas_w))
     canvas = CustomCanvas(canvas_h, canvas_w)
     colors = ["lightblue", "pink", "lightgreen", "orange", "yellow", "violet"]
     for i, r in enumerate(packed):
