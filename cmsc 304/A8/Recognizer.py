@@ -170,6 +170,11 @@ def parse_while_loop() -> None:
     expect("WHILE_KEYWORD", "while-loop")
     # then open parenthesis
     expect("LEFT_PARENTHESIS", "while-loop")
+    # ensure an expression actually starts here
+    t = current_token_type()
+    if t not in FIRST_TERM and t != "LEFT_PARENTHESIS":
+        # no valid expression so complain about it here
+        error_nonterminal("while-loop", "expression")
     # then your expression with it's args and everything
     parse_expression()
     # then close your opening parenthesis
@@ -185,6 +190,11 @@ def parse_while_loop() -> None:
 def parse_return() -> None:
     # we expect a return keyword
     expect("RETURN_KEYWORD", "return")
+    # make sure an expression actually starts here
+    t = current_token_type()
+    if t not in FIRST_TERM and t != "LEFT_PARENTHESIS":
+        # no valid expression token so complain about it here
+        error_nonterminal("return", "expression")
     # parse it
     parse_expression()
     # we also expect a ;
