@@ -25,6 +25,23 @@ import re
 # for randomized responses
 import random
 
+# little translation thing like ELIZA where you flip I'm into you are etc.
+def reflect(text):
+    # replacements
+    swap = [
+        (r"\bmy\b", "your"),
+        (r"\byour\b", "my"),
+        (r"\bme\b", "you"),
+        (r"\byou\b", "me"),
+        (r"\bi\b", "you"),
+        (r"\bam\b", "are"),
+        (r"\bare\b", "am")
+    ]
+    out = text
+    for pattern, repl in swap:
+        out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
+    return out
+
 def main():
     # opening
     print("-> [eliza] hi, i'm a psychotherapist, what is your name?")
@@ -70,6 +87,14 @@ def main():
                 print(f"-> [eliza] earlier you mentioned {last_thing}. let's talk about that more.")
             else:
                 print(f"-> [eliza] hmm, it's alright then. what have you been thinking about lately?")
+            continue
+
+        # case for i need
+        m = re.match(r"^\s*i\s+need\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
+        if m:
+            rest = m.group(1)
+            print(f"-> [eliza] why do you need {rest}?")
+            last_thing = rest
             continue
 
         # case for when user asks ELIZA a question
@@ -131,7 +156,7 @@ def main():
 
         # implementation for i like and i love and i hate
         m = re.match(r"^\s*i\s+(like|love|hate)\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
-        random_number = random.randint(1, 3)
+        random_number = random.randint(1, 2)
         if m:
             feeling = m.group(1)
             subject = m.group(2)
@@ -142,14 +167,12 @@ def main():
             if random_number == 2:
                 print(f"-> [eliza] what makes you {feeling} {subject}?")
                 continue
-            if random_number == 3:
-                print(f"-> [eliza] what do you {feeling} about {subject}?")
-                continue
 
         # implementation for i think
         m = re.match(r"^\s*i\s+think\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
         if m:
-            rest = m.group(1)
+            rest = reflect(m.group(1))
+            last_thing = rest
             print(f"-> [eliza] why do you think {rest}?")
             continue
 
