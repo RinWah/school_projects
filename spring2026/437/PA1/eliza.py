@@ -37,9 +37,13 @@ def reflect(text):
         (r"\bam\b", "are"),
         (r"\bare\b", "am")
     ]
+    # take the original user input
     out = text
+    # go through each pair of personal pronouns from swap list
     for pattern, repl in swap:
+        # replace any matches [ie. my becomes your, me -> you, etc.]
         out = re.sub(pattern, repl, out, flags=re.IGNORECASE)
+    # final sentence after swapping pronouns
     return out
 
 def main():
@@ -89,11 +93,55 @@ def main():
                 print(f"-> [eliza] hmm, it's alright then. what have you been thinking about lately?")
             continue
 
+        # case for because
+        m = re.search(r"\bbecause\b\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
+        if m:
+            reason = m.group(1)
+            responses = [
+                f"does that reason feel important to you?",
+                f"how long has {reason} been bothering you?",
+                f"what do you think led to {reason}?"
+            ]
+            print(f"-> [eliza] {random.choice(responses)}")
+            last_thing = reason
+            continue
+
         # case for i need
         m = re.match(r"^\s*i\s+need\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
         if m:
             rest = m.group(1)
             print(f"-> [eliza] why do you need {rest}?")
+            last_thing = rest
+            continue
+
+        # case for i'm afraid of
+        # forgot the \s after of and it was reading it in with weird spacing, adding \s to end of of\s makes sure it doesn't.
+        m = re.match(r"^\s*i'm\s+afraid\s+of\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
+        n = re.match(r"^\s*i\s+am\s+afraid\s+of\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
+        if m or n:
+            # set match to the matched keyword from the re.match ^
+            match = m if m else n
+            # set that value or whatever the user says they are scared of into rest variable
+            rest = match.group(1)
+            print(f"-> [eliza] why are you afraid of {rest}?")
+            last_thing = rest
+            continue
+
+        # case for i'm afraid of part too but instead it's _ something scares me
+        m = re.match(r"^\s*(.+?)\s+scares\s+me\.?\s*$", user_input, re.IGNORECASE)
+        n = re.match(r"^\s*(.+?)\s+scare\s+me\.?\s*$", user_input, re.IGNORECASE)
+        if m or n:
+            match = m if m else n
+            rest = match.group(1)
+            print(f"-> [eliza] what about {rest} scares you?")
+            last_thing = rest
+            continue
+
+        # case for i miss
+        m = re.match(r"^\s*i\s+miss\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
+        if m:
+            rest = m.group(1)
+            print(f"-> [eliza] why do you miss {rest}?")
             last_thing = rest
             continue
 
