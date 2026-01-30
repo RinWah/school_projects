@@ -67,6 +67,14 @@ def main():
     print(f"-> [eliza] hi {name}. how can i help you today?")
 
     last_thing = None
+    # adding this so there's variation in the code when ELIZA doesn't get what the user is trying to say
+    incomprehension = [
+        "i don't understand, can you try rephrasing that?",
+        "can you tell me more about that?",
+        "that's interesting, what are you thinking about in respect to this?",
+        "how does that make you feel?",
+        "hmm, let's dissect it. what part feels the most overwhelming?"
+    ]
 
     while True:
         user_input = input(f"=> [{name}] ").strip()
@@ -93,14 +101,41 @@ def main():
                 print(f"-> [eliza] hmm, it's alright then. what have you been thinking about lately?")
             continue
 
+        # case for if the patient/human i guess says stuff like i always forget or something since that's like self detrimenting [not sure if that's the right word]
+        if re.search(r"\b(always|never)\b", user_input, re.IGNORECASE):
+            print("-> [eliza] hey. be more gentle on yourself. do you believe it's an issue?")
+            continue
+
+        # case for yes/no responses since she's not that sophisticated
+        if re.fullmatch(r"\s*(yes|yeah)\s*", user_input, re.IGNORECASE):
+            print("-> [eliza] what makes you say yes?")
+            continue
+
+        if re.fullmatch(r"\s*(no|nope)\s*", user_input, re.IGNORECASE):
+            print("-> [eliza] why not?")
+            continue
+
+        # chats with dream in it
+        if re.search(r"\b(dream|dreamed|nightmare)\b", user_input, re.IGNORECASE):
+            responses = [
+                "do you usually have dreams like that?",
+                "do you think the dream had a deeper meaning?",
+                "how did you feel about the dream?"
+            ]
+            # kinda realized i could just use random like this instead of just generating a number and choosing it, i'm going to change the other ones now
+            print(f"-> [eliza] {random.choice(responses)}")
+            continue
+
         # case for because
         m = re.search(r"\bbecause\b\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
         if m:
-            reason = m.group(1)
+            reason = reflect(m.group(1))
+            # i had it incorporate context before, but it was reflecting oddly so i changed it to just these generic responses instead
             responses = [
-                f"does that reason feel important to you?",
-                f"how long has {reason} been bothering you?",
-                f"what do you think led to {reason}?"
+                "how long has that been bothering you?",
+                "what about that feels most upsetting?",
+                "how does that make you feel?",
+                "why do you think that happened?"
             ]
             print(f"-> [eliza] {random.choice(responses)}")
             last_thing = reason
@@ -183,16 +218,15 @@ def main():
         # implementation for i can't
         # i originally wrote this like if m and if random_number = # but then realized i could do it like this lol
         m = re.match(r"^\s*i\s+(can't|cannot|cant)\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
-        random_number = random.randint(1, 2)
         if m:
             rest = m.group(2)
             last_thing = rest
-            if random_number == 1:
-                print(f"-> [eliza] what makes you think you can't {rest}?")
-                continue
-            if random_number == 2:
-                print(f"-> [eliza] why do you think you can't {rest}?")
-                continue
+            responses = [
+                f"what makes you think you can't {rest}?",
+                f"why do you think you can't {rest}?"
+            ]
+            print(f"-> [eliza] {random.choice(responses)}")
+            continue
 
         # base for rule the world
         m = re.match(r"^\s*i\s+want\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
@@ -204,17 +238,16 @@ def main():
 
         # implementation for i like and i love and i hate
         m = re.match(r"^\s*i\s+(like|love|hate)\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
-        random_number = random.randint(1, 2)
         if m:
             feeling = m.group(1)
             subject = m.group(2)
             last_thing = subject
-            if random_number == 1:
-                print(f"-> [eliza] what do you {feeling} about {subject}?")
-                continue
-            if random_number == 2:
-                print(f"-> [eliza] what makes you {feeling} {subject}?")
-                continue
+            responses = [
+                "what do you {feeling} about {subject}?",
+                "what makes you {feeling} {subject}?"
+            ]
+            print(f"-> [eliza] {random.choice(responses)}")
+            continue
 
         # implementation for i think
         m = re.match(r"^\s*i\s+think\s+(.+?)\.?\s*$", user_input, re.IGNORECASE)
@@ -265,7 +298,8 @@ def main():
             continue
 
         # if user input is gibberish
-        print("-> [eliza] I didn't quite understand. Can you say that another way?")
+        # i need variation lol
+        print(f"-> [eliza] {random.choice(incomprehension)}")
 
 if __name__ == "__main__":
     main()
