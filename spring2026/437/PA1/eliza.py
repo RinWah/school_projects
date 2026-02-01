@@ -242,9 +242,10 @@ def main():
             feeling = m.group(1)
             subject = m.group(2)
             last_thing = subject
+            # i changed this to f strings so that it actually subs in what i wanted it to, oops
             responses = [
-                "what do you {feeling} about {subject}?",
-                "what makes you {feeling} {subject}?"
+                f"what do you {feeling} about {subject}?",
+                f"what makes you {feeling} {subject}?"
             ]
             print(f"-> [eliza] {random.choice(responses)}")
             continue
