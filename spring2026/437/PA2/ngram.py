@@ -1,3 +1,25 @@
+"""
+CMSC 437 | PA1
+ELIZA (psychotherapist machine)
+
+Rin Pereira
+Due Date: 2/2/26
+
+Problem: Conversating with a human patient in a psychotherapy setting.
+ie. How are you feeling?
+ie. I'm feeling sad.
+ie. Why are you feeling sad?
+etc etc.
+
+Algorithm:
+* basically read in what the user says
+* match it with any keywords in a while True loop
+* if it matches, output that value
+* ^ if it doesn't match, have a placeholder phrase like "can you say that in a different way" or refer back to a previous conversation [ELIZA goal in
+the past]
+* keep going and let the user be able to quit anytime by saying bye or quit
+"""
+
 import sys
 import re
 import random
@@ -75,7 +97,6 @@ def main():
     if len(sys.argv) < 4:
         print("Usage: python ngram.py n m input_file1 [input_file2 ...]")
         return
-
     n = int(sys.argv[1])
     m = int(sys.argv[2])
     file_names = sys.argv[3:]
