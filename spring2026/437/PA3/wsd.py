@@ -29,3 +29,5 @@ for inst_id, inst_body in instances:
     #2. find the context (the sentence)
     # we want everything inside context not including the tag
     context = re.search(r'<context>(.*?)</context>', inst_body, re.S).group(1)
+
+    #3. clean text: remove <tags>, punctuation, lowercase
