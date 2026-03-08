@@ -31,3 +31,8 @@ for inst_id, inst_body in instances:
     context = re.search(r'<context>(.*?)</context>', inst_body, re.S).group(1)
 
     #3. clean text: remove <tags>, punctuation, lowercase
+    clean_text = re.sub(r'<.*?>', '', context) # remove <s> and <head>
+    clean_text = re.sub(r'[^\w\s]', '', clean_text) # remove punctuation . ,
+    words = clean_text.lower().split()
+
+    print(f"sense: {sense} | first few words: {words.[:5]}")
