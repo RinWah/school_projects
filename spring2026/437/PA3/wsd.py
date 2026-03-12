@@ -14,13 +14,17 @@ import sys
 import re
 
 # open file
-train_file = sys.argv[1]
+train_file = "line-train.txt"
 
 with open(train_file, 'r') as f:
     content = f.read()
 
 # finds every "instance" block in the file
 instances = re.findall(r'<instance id="(.*?)">(.*?)</instance>', content, re.S)
+
+# create the empty jars
+phone_jar = {}
+product_jar = {}
 
 for inst_id, inst_body in instances:
     #1. find the answer (phone or product)
@@ -35,4 +39,4 @@ for inst_id, inst_body in instances:
     clean_text = re.sub(r'[^\w\s]', '', clean_text) # remove punctuation . ,
     words = clean_text.lower().split()
 
-    print(f"sense: {sense} | first few words: {words.[:5]}")
+    print(f"sense: {sense} | first few words: {words[:5]}")
