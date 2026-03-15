@@ -12,31 +12,86 @@
 
 import sys
 import re
+import math
+from collections import defaultdict
 
+# step 1: read arguments
 # open file
-train_file = "line-train.txt"
+train_file = sys.argv[1]
+test_file = sys.argv[2]
+model_file = sys.argv[3]
 
-with open(train_file, 'r') as f:
+# step 2: parse training data
+
+with open(train_file) as f:
     content = f.read()
 
 # finds every "instance" block in the file
 instances = re.findall(r'<instance id="(.*?)">(.*?)</instance>', content, re.S)
 
-# create the empty jars
-phone_jar = {}
-product_jar = {}
+phone_counts = defaultdict(int)
+product_counts = defaultdict(int)
+
+total_phone = 0
+total_product = 0
 
 for inst_id, inst_body in instances:
-    #1. find the answer (phone or product)
-    sense = re.search(r'senseid="(.*?)"', inst_body).group(1)
+    # use a variable to store the search result first
+    sense_match = re.search(r'senseid="(.*?)"', inst_body)
+    context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
 
-    #2. find the context (the sentence)
-    # we want everything inside context not including the tag
-    context = re.search(r'<context>(.*?)</context>', inst_body, re.S).group(1)
+    # only keep going if we actually found both
+    if sense_match and context_match:
+        sense = sense_match.group(1)
+        context = context_match.group(1)
 
-    #3. clean text: remove <tags>, punctuation, lowercase
-    clean_text = re.sub(r'<.*?>', '', context) # remove <s> and <head>
-    clean_text = re.sub(r'[^\w\s]', '', clean_text) # remove punctuation . ,
-    words = clean_text.lower().split()
+        # cleaning code
+        words = re.findall(r'\b[a-z]+\b', context.lower())
 
-    print(f"sense: {sense} | first few words: {words[:5]}")
+        # put words into jar
+        if sense == "phone": 
+            for w in words:
+                phone_counts[w] += 1
+        elif sense == "product":
+            total_product += 1
+            for w in words:
+                product_counts[w] += 1
+
+# step 3: build feature list
+vocab = set(phone_counts.keys()) | set(product_counts.keys())
+decision_list = []
+for word in vocab: 
+    phone = phone_counts[word] + 1
+    product = product_counts[word] + 1
+    score = math.log2(phone / product)
+    if score > 0:
+        sense = "phone"
+    else:
+        sense = "product"
+    decision_list.append((abs(score), word, sense, score))
+
+# step 4: sort decision list
+decision_list.sort(reverse=True)
+
+#step 5: write model file
+with open(model_file, "w") as m:
+    for score_abs, word, sense, score in decision_list:
+        m.write(f"{word}\t{sense}\t{score}\n")
+
+# step 6 :classify test data
+with open(test_file) as f:
+    test = f.read()
+test_instances = re.findall(r'<instance id="(.*?)">(.*?)</instance>', test, re.S)
+for inst_id, inst_body in test_instances:
+    context_match = re.search(r'<context>(.*?)</context>', inst_body.re.S)
+    if context_match:
+        context = context_match.group(1)
+        words = set(re.findall(r'\b[a-z]+\b', context.lower()))
+        prediction = None
+        for score_abs, word, sense, score in decision_list:
+            if word in words:
+                prediction = sense
+                break
+        if prediction is None:
+            prediction = "phone" # base
+        print(f'<answer instance="{inst_id}" senseid="{prediction}"/>')
