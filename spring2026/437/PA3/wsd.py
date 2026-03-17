@@ -1,3 +1,12 @@
+# wsd.py
+
+# word sense disambiguation using decision list classification.
+
+# usage: 
+# python3 wsd.py line-train.txt line-test.txt my-model.txt > my-line-answers.txt
+
+# this program learns a model from training data and predicts sense (phone | product) for each instance of word 'line' in test data.
+
 # parse -> extract -> rank -> predict
 # import re module for re.findall(r'senseid="(\w+)"', line)
 # get text for each sense
@@ -7,6 +16,16 @@
 # create frequency map: * Count(word, sense_phone)
 # Count(word, sense_product)
 # constraints: only use words found in line-train.txt
+
+# algorithm:
+# 1. parse training instances
+# 2. extract bag-of-words features from contexts
+# 3. count word frequencies fore ach sense
+# 4. calculate log likelihood:
+# log2( P(word|phone) / P(word|product) )
+# 5. rank features to create a decision list
+# 6. apply decision list to test sentences
+# 7. if no feature fires -> use most frequent sense baseline
 
 # decision list classifier
 
@@ -20,6 +39,7 @@ from collections import defaultdict
 train_file = sys.argv[1]
 test_file = sys.argv[2]
 model_file = sys.argv[3]
+output_file = sys.argv[4]
 
 # step 2: parse training data
 
@@ -27,7 +47,7 @@ with open(train_file) as f:
     content = f.read()
 
 # finds every "instance" block in the file
-instances = re.findall(r'<instance id="(.*?)">(.*?)</instance>', content, re.S)
+instances = re.findall(r'<instance id="([^"]+)">(.*?)</instance>', content, re.S)
 
 phone_counts = defaultdict(int)
 product_counts = defaultdict(int)
@@ -50,6 +70,7 @@ for inst_id, inst_body in instances:
 
         # put words into jar
         if sense == "phone": 
+            total_phone += 1
             for w in words:
                 phone_counts[w] += 1
         elif sense == "product":
@@ -58,11 +79,13 @@ for inst_id, inst_body in instances:
                 product_counts[w] += 1
 
 # step 3: build feature list
+total_phone_words = sum(phone_counts.values())
+total_product_words = sum(product_counts.values())
 vocab = set(phone_counts.keys()) | set(product_counts.keys())
 decision_list = []
 for word in vocab: 
-    phone = phone_counts[word] + 1
-    product = product_counts[word] + 1
+    phone = (phone_counts[word] + 1) / (total_phone_words + len(vocab))
+    product = (product_counts[word] + 1) / (total_product_words + len(vocab))
     score = math.log2(phone / product)
     if score > 0:
         sense = "phone"
@@ -81,17 +104,19 @@ with open(model_file, "w") as m:
 # step 6 :classify test data
 with open(test_file) as f:
     test = f.read()
-test_instances = re.findall(r'<instance id="(.*?)">(.*?)</instance>', test, re.S)
-for inst_id, inst_body in test_instances:
-    context_match = re.search(r'<context>(.*?)</context>', inst_body.re.S)
-    if context_match:
-        context = context_match.group(1)
-        words = set(re.findall(r'\b[a-z]+\b', context.lower()))
-        prediction = None
-        for score_abs, word, sense, score in decision_list:
-            if word in words:
-                prediction = sense
-                break
-        if prediction is None:
-            prediction = "phone" # base
-        print(f'<answer instance="{inst_id}" senseid="{prediction}"/>')
+test_instances = re.findall(r'<instance id="([^"]+)">(.*?)</instance>', test, re.S)
+baseline = "phone" if total_phone > total_product else "product"
+with open(output_file, "w", encoding="utf-8") as out:
+    for inst_id, inst_body in test_instances:
+        context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
+        if context_match:
+            context = context_match.group(1)
+            words = set(re.findall(r'\b[a-z]+\b', context.lower()))
+            prediction = None
+            for score_abs, word, sense, score in decision_list:
+                if word in words:
+                    prediction = sense
+                    break
+            if prediction is None:
+                prediction = baseline
+            out.write(f'<answer instance="{inst_id}" senseid="{prediction}"/>\n')

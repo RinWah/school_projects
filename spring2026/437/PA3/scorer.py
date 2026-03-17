@@ -8,13 +8,21 @@ def load(file):
     d = {}
     with open(file) as f:
         for line in f:
-            m = re.search(r'instance="(.*?)".*senseid="(.*?)"', line)
-            if m:
-                d[m.group(1)] = m.group(2)
+            print("LINE:", repr(line))  # debug
+            inst = re.search(r'instance="([^"]+)"', line)
+            sense = re.search(r'senseid="([^"]+)"', line)
+
+            if inst and sense:
+                d[inst.group(1)] = sense.group(1)
+
+    print("Loaded:", len(d))
     return d
 
 pred = load(answers)
 gold = load(key)
+
+print("pred size:", len(pred))
+print("gold size:", len(gold))
 
 correct = 0
 
@@ -28,18 +36,14 @@ for inst in gold:
     p = pred.get(inst)
     if p == g:
         correct += 1
+    if p is None:
+        continue
     confusion[g][p] += 1
 
 accuracy = correct / len(gold)
 
-print("accuracy:")
+print("accuracy:", accuracy)
+print()
 
-def main(): 
-    with open("line-test.txt", "r") as f:
-        test = f.read()
-    with open("line-train.txt", "r") as f:
-        train = f.read()
-    accuracy = 0
-    confusion_matrix = []
-    
-    
+print("confusion matrix")
+print(confusion)
