@@ -1,4 +1,6 @@
 # wsd.py
+# rin pereira
+# mar 16 2026
 
 # word sense disambiguation using decision list classification.
 
