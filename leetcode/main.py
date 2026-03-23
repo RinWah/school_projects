@@ -1,31 +1,22 @@
-# numbers = [1,2,4,6,8,9,14,15]
-numbers = [2, 1, 2, 1, 2]
+class Solution(object):
+    def findTheDifference(self, s, t):
+        # --- YOUR LOGIC GOES HERE ---
+        for char in s: 
+            for cha in t:
+                if char != cha:
+                    break
+        # Remember to return a string
+        return char
+        pass
 
-def meow(numbers, sum):
-    left = numbers[0]
-    right = numbers[len(numbers)-1] 
-    sum = sum
-    found = False
-    # some loop
-    while found == False: 
-        i=0
-        j=1
-        
-        if left + right == sum: 
-            message = f"{left} and {right} add up to {sum}"
-        else:
-            i+=1
-            j+=1
-            left = numbers[0+i]
-            right = numbers[len(numbers)-j]
-            break
-        return message
-    
-def main():
-    # 3. We need to print the result since meow() returns a string
-    result = meow(numbers, 2)
-    print(result)
-
-# 4. The standard entry point
+# This part stays the same regardless of your logic
 if __name__ == "__main__":
-    main()
+    sol = Solution()
+    
+    # Test Case 1
+    s1, t1 = "abcd", "abcde"
+    print(f"Test 1 - Expected: 'e', Got: '{sol.findTheDifference(s1, t1)}'")
+    
+    # Test Case 2
+    s2, t2 = "", "y"
+    print(f"Test 2 - Expected: 'y', Got: '{sol.findTheDifference(s2, t2)}'")
