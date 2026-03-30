@@ -13,10 +13,10 @@ from sklearn.svm import LinearSVC
 #
 # comparison
 # mfs base: 52.41%
-# pa3 decision list: [FILL IN]%
-# naive bayes accuracy: [FILL IN]%
-# decision tree accuracy: [FILL IN]%
-# svm accuracy: [FILL IN]%
+# pa3 decision list: 89.68%
+# naive bayes accuracy: 94.44%
+# decision tree accuracy: 80.16%
+# svm accuracy: 90.48%
 # ========================================================================
 
 def parse_data(file_path, is_training=True):
