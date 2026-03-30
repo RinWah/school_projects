@@ -2,63 +2,81 @@ import sys
 import re
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.tree import DecisionTreeClassifier 
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import LinearSVC
 
-# description 
-# bagf of words feature representation
-# each sentence is converted into vector where each dimension represents a unique word from training data.
-# value is word's frequency
-# only use words from 'line-train.txt' to build vocab.
+# ========================================================================
+# description of models / features
+# features: bag-of-words rep (counts unique words from training data).
+# clean -> lowercase text + remove punctuation
+# models: Naive Bayes, Decision Tree, SVM.
+#
+# comparison
+# mfs base: 52.41%
+# pa3 decision list: [FILL IN]%
+# naive bayes accuracy: [FILL IN]%
+# decision tree accuracy: [FILL IN]%
+# svm accuracy: [FILL IN]%
+# ========================================================================
 
-# compare your results to that of the most frequent sense baseline and the results from your programming assignment 3 decision list.
-# 
+def parse_data(file_path, is_training=True):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except FileNotFoundError:
+        sys.stderr.write(f"ERROR: File {file_path} not found.\n")
+        return [], [], []
 
-# handle CL args
-train_file = sys.argv[1]
-test_file = sys.argv[2]
-# if there's a 3rd arg, use that, otherwise default to NaiveBayes
-model_name = sys.argv[3] if len(sys.argv) > 3 else "NaiveBayes"
-# parse training file
-with open(train_file, 'r') as f:
-    train_content = f.read()
+    # Robust regex: handles spaces, single/double quotes, and attributes
+    instances = re.findall(r'<instance\s+id=["\']([^"\']+)["\']\s*.*?>(.*?)</instance>', content, re.S | re.I)
+    ids, contexts, labels = [], [], []
 
-train_instance = re.findall(r'<instance id="([^"]+)">(.*?)</instance>', train_content, re.S)
-train_contexts = []
-train_labels = []
+    for inst_id, inst_body in instances:
+        # Robust context regex
+        context_match = re.search(r'<context\s*.*?>(.*?)</context>', inst_body, re.S | re.I)
+        if context_match:
+            text = context_match.group(1).lower()
+            text = " ".join(re.findall(r'\b[a-z0-9]+\b', text))
+            
+            ids.append(inst_id)
+            contexts.append(text)
+            
+            if is_training:
+                # Robust senseid regex
+                sense_match = re.search(r'senseid=["\']([^"\']+)["\']', inst_body, re.I)
+                labels.append(sense_match.group(1) if sense_match else "phone")
 
-for inst_id, inst_body in train_instances:
-    sense_match = re.search(r'senseid="(.*?)"', inst_body)
-    context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
-    if sense_match and context_match:
-        train_labels.append(sense_match.group(1))
-        # clean text -> lowercase & get rid of punctuation
-        clean_text = " ".join(re.findall(r'\b[a-z]+\b', context_match.group(1).lower()))
-        train_contexts.append(clean_text)
-# bow
-# initialize
-# features from training data
+    # Debug info to your console
+    sys.stderr.write(f"DEBUG: Processed {len(ids)} instances from {file_path}\n")
+    return ids, contexts, labels
+
+# 1. Setup
+if len(sys.argv) < 3:
+    print("Usage: python wsd-ml.py line-train.txt line-test.txt [model]")
+    sys.exit(1)
+
+train_file, test_file = sys.argv[1], sys.argv[2]
+model_type = sys.argv[3] if len(sys.argv) > 3 else "NaiveBayes"
+
+# 2. Extract Data
+train_ids, train_contexts, train_labels = parse_data(train_file, is_training=True)
+test_ids, test_contexts, _ = parse_data(test_file, is_training=False)
+
+# 3. ML Pipeline
 vectorizer = CountVectorizer()
-# learn vocab & transform training data
-X_train = vectorizer.fit.transform(train_contexts) # only from train file
-# choose model
-if model_name == "DecisionTree":
+X_train = vectorizer.fit_transform(train_contexts)
+X_test = vectorizer.transform(test_contexts)
+
+if model_type == "DecisionTree":
     clf = DecisionTreeClassifier()
-elif model_name == "SVM":
-    clf = LinearSVC()
-else: # default naivebayes
+elif model_type == "SVM":
+    clf = LinearSVC(max_iter=10000, dual=False)
+else:
     clf = MultinomialNB()
+
 clf.fit(X_train, train_labels)
-# parse & classify test data
-with open(test_file, 'r') as f:
-    test_content = f.read()
-test_instances = re.findall(r'<instance id="([^"]+)">(.*?)</instance>', test_content, re.S)
-for inst_id, inst_body in test_instances:
-    context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
-    if context_match:
-        test_text = " ".join(re.findall(r'\b[a-z]+\b', context_match.group(1).lower()))
-        # transform using the training vocabulary only
-        X_test = vectorizer.transform([test_text]) # using vocab from line-train.txt
-        prediction = clf.predict(X_test)[0]
-        # output in the required format
-        print(f'<answer instance="{inst_id}" senseid="{prediction}"/>')
+predictions = clf.predict(X_test)
+
+# 4. Output to STDOUT
+for inst_id, pred in zip(test_ids, predictions):
+    print(f'<answer instance="{inst_id}" senseid="{pred}"/>')
