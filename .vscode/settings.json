@@ -1,5 +1,14 @@
 {
     "files.associations": {
         "stdio.h": "c"
-    }
+    },
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "408p4",
+            "database": "${workspaceFolder:school_projects}/spring2026/408/database.db"
+        }
+    ]
 }

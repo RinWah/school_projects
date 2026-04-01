@@ -1,4 +1,3 @@
 class main():
-    s = "cat"
-    for letter in s:
-            print(letter)
+    counts = {"a": 1}
+    print(counts)
