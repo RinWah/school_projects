@@ -1,35 +1,27 @@
 #include <stdio.h>
+#include <string.h>
 
 int main() {
-    /* TODO: declare the 2D array grades here */
-    int grades[2][4];
-    float average;
-    int i; 
-    int j;
+    /* 1. define first_name using pointer notation */
+    const char *first_name = "John";
+    /* 2. define last_name using array notation */
+    char last_name[] = "Doe";
 
-    grades[0][0] = 80;
-    grades[0][1] = 70;
-    grades[0][2] = 65;
-    grades[0][3] = 89;
-    grades[0][4] = 90;
+    char name[20];
 
-    grades[1][0] = 85;
-    grades[1][1] = 80;
-    grades[1][2] = 80;
-    grades[1][3] = 82;
-    grades[1][4] = 87;
+    /* let's combine them into 'name ' */
+    strcpy(name, first_name);
+    // instead of strcat(nae, " ");
+    strncat(name, " ", 1);
+    // instead of strncat(name, last_name);
+    strncat(name, last_name, 3);
 
-    /* TODO: complete the for loop with appropriate terminating conditions */
-    for (i = 0; i < 2; i++) {
-        average = 0;
-        for (j = 0; j < 4; j++) {
-            average += grades[i][j];
-        }
-        /* TODO: compute the average marks for subject i */
-        average /= 10;
-        printf("The average marks obtained in subject %d is: %.2f\n", i, average);
+    /* 3. validation check */
+    /* use strncmp to check if first_name is "John" */
+    if (strncmp(first_name, "John", 4) == 0) {
+        printf("Done! Full name: %s/n", name);
+    } else {
+        printf("Check your definitions again!\n");
     }
     return 0;
 }
-
-/* TODO: must finish this lesson, idk how to do the average. maybe ask chatgpt lol*/
