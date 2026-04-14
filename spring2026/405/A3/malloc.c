@@ -23,6 +23,28 @@ void free(void *ptr) {
     //free block
     block_ptr->free=1;
     //merging logic to combine free memories
+    //merge with next block if it exists and is free
+    if(block_ptr->next&&block_ptr->next->free){
+        //expand metadata and size
+        block_ptr->size+=META_SIZE+block_ptr->next->size;
+        //skip to next block
+        block_ptr->next=block_ptr->next->next;
+        //if theres a block after, update before/prev
+        if(block_ptr->next){
+            block_ptr->next->prev=block_ptr;
+        }
+    }
+    //merge prev with current if free
+    if(block_ptr->prev&&block_ptr->prev->free){
+        //expand size and update metadata
+        block_ptr->prev->size+=META_SIZE+block_ptr->size;
+        //skip
+        block_ptr->prev->next=block_ptr->next;
+        //point prev
+        if(block_ptr->next){
+            block_ptr->next->prev=block_ptr->prev;
+        }
+    }
 }
 struct block_meta *find_best_fit(struct block_meta **last, size_t size) {
     struct block_meta *current = global_base;
@@ -88,7 +110,7 @@ void *malloc(size_t size) {
             if((block->size)>=(size+META_SIZE+1)){
                 //create note for leftover piece
                 //new metadata starts after block data
-                struct block_meta *new_block=(struct block_meta*)((char *)(block_1)+size);
+                struct block_meta *new_block=(struct block_meta*)((char *)(block+1)+size);
                 //setup new block's metadata
                 new_block->size=block->size-size-META_SIZE;
                 new_block->free=1;
