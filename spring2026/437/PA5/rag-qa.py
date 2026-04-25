@@ -1,14 +1,20 @@
-# step 1: document processing
-# fetch text from wikipedia API
-# split into chunks / passages
-# generate embeddings for chunks using SentenceTransformers
+import os
+import wikipediaapi
+import ollama
+from sentence_transformers import SentenceTransformer, util
+import torch
 
-# step 2: the retrieval 
-# embed the user's question
-# compare question vector vs passage vectors using cosine similarity
-# grab top 3 passages
+wiki = wikipediaapi.Wikipedia(
+    user_agent="RinProject/1.0 (pereirar@vcu.edu)",
+    languages='en'
+)
+embed_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# step 3: generation 
-# send 3 passages + question to ollama via local API
-# printn answer
-# print evidence with passages
+def get_rag_answer(question):
+    topic_res = ollama.chat(model='llama3.2', messages=[
+        {'role': 'user', 'content': f"provide only the wikipedia article title for '{question}'"}
+    ])
+    topic = topic_res['message']['content'].strip().replace('"', '')
+    
+    cache+path = f"cache/{topic.replace(' ', '_')}.txt"
+    
