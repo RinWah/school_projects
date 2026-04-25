@@ -6,16 +6,12 @@ key = sys.argv[2]
 
 def load(file):
     d = {}
-    with open(file) as f:
+    with open(file, 'r', encoding='utf-8') as f: 
         for line in f:
-            print("LINE:", repr(line))  # debug
-            inst = re.search(r'instance="([^"]+)"', line)
-            sense = re.search(r'senseid="([^"]+)"', line)
-
+            inst = re.search(r'instance\s*=\s*"([^"]+)"', line)
+            sense = re.search(r'senseid\s*=\s*"([^"]+)"', line)
             if inst and sense:
                 d[inst.group(1)] = sense.group(1)
-
-    print("Loaded:", len(d))
     return d
 
 pred = load(answers)

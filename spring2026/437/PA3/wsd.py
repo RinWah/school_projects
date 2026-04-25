@@ -41,7 +41,6 @@ from collections import defaultdict
 train_file = sys.argv[1]
 test_file = sys.argv[2]
 model_file = sys.argv[3]
-output_file = sys.argv[4]
 
 # step 2: parse training data
 
@@ -108,17 +107,16 @@ with open(test_file) as f:
     test = f.read()
 test_instances = re.findall(r'<instance id="([^"]+)">(.*?)</instance>', test, re.S)
 baseline = "phone" if total_phone > total_product else "product"
-with open(output_file, "w", encoding="utf-8") as out:
-    for inst_id, inst_body in test_instances:
-        context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
-        if context_match:
-            context = context_match.group(1)
-            words = set(re.findall(r'\b[a-z]+\b', context.lower()))
-            prediction = None
-            for score_abs, word, sense, score in decision_list:
-                if word in words:
-                    prediction = sense
-                    break
-            if prediction is None:
-                prediction = baseline
-            out.write(f'<answer instance="{inst_id}" senseid="{prediction}"/>\n')
+for inst_id, inst_body in test_instances:
+    context_match = re.search(r'<context>(.*?)</context>', inst_body, re.S)
+    if context_match:
+        context = context_match.group(1)
+        words = set(re.findall(r'\b[a-z]+\b', context.lower()))
+        prediction = None
+        for score_abs, word, sense, score in decision_list:
+            if word in words:
+                prediction = sense
+                break
+        if prediction is None:
+            prediction = baseline
+        print(f'<answer instance="{inst_id}" senseid="{prediction}"/>')

@@ -1,4 +1,4 @@
-<answer instance="line-n.w8_059:8174:" senseid="phone"/>
+﻿<answer instance="line-n.w8_059:8174:" senseid="phone"/>
 <answer instance="line-n.w7_098:12684:" senseid="phone"/>
 <answer instance="line-n.w8_106:13309:" senseid="phone"/>
 <answer instance="line-n.w9_40:10187:" senseid="phone"/>
